@@ -1,6 +1,9 @@
 import React from "react";
 import axios from "axios";
 import moment from "moment";
+
+import Modal from "react-modal";
+
 import "./CalendarPage.scss";
 
 type Notice = {
@@ -12,11 +15,19 @@ type Notice = {
     image: string;
 };
 
+type DateArr = {
+    date: string;
+    notice: Notice;
+};
+
 type Props = {};
 
 type State = {
     data: Notice[];
     todayDate: moment.Moment;
+    dateArr: DateArr[];
+    isModalOpen: boolean;
+    modalData: Notice;
 };
 
 class CalendarPage extends React.Component<Props, State> {
@@ -24,7 +35,17 @@ class CalendarPage extends React.Component<Props, State> {
         super(props);
         this.state = {
             data: [],
-            todayDate: moment(),
+            todayDate: moment("20210601"),
+            dateArr: [],
+            isModalOpen: false,
+            modalData: {
+                id: 0,
+                content: "",
+                start_time: "",
+                end_time: "",
+                name: "",
+                image: "",
+            },
         };
     }
 
@@ -47,7 +68,9 @@ class CalendarPage extends React.Component<Props, State> {
                 }
             });
 
-            this.calendarArr(curNotice);
+            // this.calendarArr(curNotice);
+            this.appendStartNotice(curNotice);
+            this.appendEndNotice(curNotice);
             this.setState({
                 data: response.data as Notice[],
             });
@@ -56,66 +79,151 @@ class CalendarPage extends React.Component<Props, State> {
         }
     };
 
-    calendarArr = (noticeArr: []) => {
+    appendStartNotice = (curNotice: Notice[]) => {
+        curNotice.map((notice: Notice) => {
+            const startDateSpan = document.querySelector(
+                `.date${moment(notice.start_time).format("MMDD")}`
+            );
+
+            const startContent = document.createElement("p");
+            startContent.innerHTML = `<div>시 ${notice.name}</div>`;
+            startContent.addEventListener("click", () =>
+                this.onClickNotice(notice)
+            );
+
+            startDateSpan?.append(startContent);
+        });
+    };
+
+    appendEndNotice = (curNotice: Notice[]) => {
+        curNotice.map((notice: Notice) => {
+            const endDateSpan = document.querySelector(
+                `.date${moment(notice.end_time).format("MMDD")}`
+            );
+
+            const endContent = document.createElement("p");
+            endContent.innerHTML = `<div>끝 ${notice.name}</div>`;
+            endContent.addEventListener("click", () =>
+                this.onClickNotice(notice)
+            );
+
+            endDateSpan?.append(endContent);
+        });
+    };
+
+    onClickNotice = (notice: Notice) => {
+        console.log("clickNotice", notice);
+        this.setState({
+            isModalOpen: true,
+            modalData: notice,
+        });
+    };
+
+    calendarArr = () => {
         const today = this.state.todayDate;
-        let firstWeek = today.clone().startOf("month").week();
+        const firstWeek = today.clone().startOf("month").week();
         const lastWeek =
             today.clone().endOf("month").week() === 1
                 ? 53
                 : today.clone().endOf("month").week();
 
-        let result = [] as any;
+        let result: any = [];
+        let week = firstWeek;
+        for (week; week <= lastWeek; week++) {
+            result = result.concat(
+                <div className="weekArea" key={week}>
+                    {Array(7)
+                        .fill(0)
+                        .map((data, index) => {
+                            let days = today
+                                .clone()
+                                .startOf("year")
+                                .week(week)
+                                .startOf("week")
+                                .add(index, "day");
 
-        console.log(firstWeek, lastWeek);
-
-        for (firstWeek; firstWeek <= lastWeek; firstWeek++) {
-            for (let i = 1; i <= 7; i++) {
-                let days = today
-                    .clone()
-                    .startOf("year")
-                    .week(firstWeek)
-                    .startOf("week")
-                    .add(i, "day");
-                console.log(days.format("D"));
-                result.push({
-                    date: days.format("D"),
-                });
-            }
+                            return (
+                                <div className="dateArea" key={index}>
+                                    <p className="date">{days.format("D")}</p>
+                                    <p
+                                        className={`date${days.format("MMDD")}`}
+                                    ></p>
+                                </div>
+                            );
+                        })}
+                </div>
+            );
         }
-        console.log(result, noticeArr);
-        noticeArr.map((notice: Notice) => {
-            result.map((res: any) => {
-                if (moment(notice.start_time).format("D") === res.date) {
-                    res.notice = notice;
-                }
-            });
-        });
-
-        console.log(result);
-
-        // for (week; week <= lastWeek; week++) {
-        //     result = result.concat(
-        //         <div className="weekArea" key={week}>
-        //             {Array(7)
-        //                 .fill(0)
-        //                 .map((data, index) => {
-        //                     let days = today
-        //                         .clone()
-        //                         .startOf("year")
-        //                         .week(week)
-        //                         .startOf("week")
-        //                         .add(index, "day");
-
-        //                     return (
-        //                         <div className="dateArea" key={index}>
-        //                             <span>{days.format("D")}</span>
-        //                         </div>
-        //                     );
-        //                 })}
-        //         </div>
-        //     );
-        // }
         return result;
+    };
+
+    // calendarArr = (noticeArr: []) => {
+    //     const today = this.state.todayDate;
+    //     let firstWeek = today.clone().startOf("month").week();
+    //     const lastWeek =
+    //         today.clone().endOf("month").week() === 1
+    //             ? 53
+    //             : today.clone().endOf("month").week();
+
+    //     let tempArr = [] as any;
+
+    //     for (firstWeek; firstWeek <= lastWeek; firstWeek++) {
+    //         for (let i = 1; i <= 7; i++) {
+    //             let days = today
+    //                 .clone()
+    //                 .startOf("year")
+    //                 .week(firstWeek)
+    //                 .startOf("week")
+    //                 .add(i, "day");
+    //             tempArr.push({
+    //                 date: days.format("D"),
+    //             });
+    //         }
+    //     }
+    //     noticeArr.map((notice: Notice) => {
+    //         tempArr.map((res: any) => {
+    //             if (moment(notice.start_time).format("D") === res.date) {
+    //                 console.log(res.notice);
+    //                 res.notice = notice;
+    //             }
+    //         });
+    //     });
+
+    //     this.setState({
+    //         dateArr: tempArr,
+    //     });
+    // };
+
+    // renderCalendar = () => {
+    //     let renderResult: any = [];
+    //     for (let i = 1; i < 7; i++) {
+    //         renderResult.push(`<div class="weekArea">`);
+
+    //         this.state.dateArr
+    //             .slice((i - 1) * 7, i * 7)
+    //             .map((dateInfo: DateArr) => {
+    //                 renderResult.push(
+    //                     `<div class="dateArea">
+    //                         <p class="date">${dateInfo.date}</p>
+    //                         <p class="noticeName">${
+    //                             dateInfo.notice ? dateInfo.notice.name : ""
+    //                         }</p>
+    //                     </div>`
+    //                 );
+    //             });
+    //         renderResult.push(`</div>`);
+    //     }
+    //     return (
+    //         <div
+    //             dangerouslySetInnerHTML={{ __html: renderResult.join("") }}
+    //         ></div>
+    //     );
+    // };
+
+    closeModal = () => {
+        this.setState({
+            isModalOpen: false,
+        });
     };
 
     render() {
@@ -146,14 +254,36 @@ class CalendarPage extends React.Component<Props, State> {
                         다음달
                     </button>
                 </div>
-                {/* <div>{this.calendarArr()}</div> */}
+                <div>{this.calendarArr()}</div>
+
+                <Modal
+                    isOpen={this.state.isModalOpen}
+                    ariaHideApp={false}
+                    onRequestClose={this.closeModal}
+                    className="noticeModal"
+                >
+                    <div>
+                        <img
+                            className="noticeImage"
+                            width="90px"
+                            height="90px"
+                            src={this.state.modalData.image}
+                            alt="공고이미지"
+                        />
+                    </div>
+                    <div
+                        dangerouslySetInnerHTML={{
+                            __html: this.state.modalData.content,
+                        }}
+                    ></div>
+                </Modal>
             </>
             // <div>
             //     {this.state.data.map((notice: Notice) => (
-            //         <div
-            //             key={notice.id}
-            //             dangerouslySetInnerHTML={{ __html: notice.content }}
-            //         ></div>
+            // <div
+            //     key={notice.id}
+            //     dangerouslySetInnerHTML={{ __html: notice.content }}
+            // ></div>
             //     ))}
             // </div>
         );
