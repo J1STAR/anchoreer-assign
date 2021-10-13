@@ -1,7 +1,26 @@
 .monthHeader {
     width: 100%;
     text-align: center;
-    color: #ff6813;
+
+    font-size: 2em;
+    font-weight: bold;
+    .monthHeader_month {
+        color: #ff6813;
+    }
+}
+
+.weekNameArea {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+
+    .weekName {
+        width: 100%;
+        text-align: center;
+        background-color: lightgray;
+        border: 1px solid white;
+        color: white;
+    }
 }
 
 .weekArea {
@@ -17,16 +36,48 @@
             border: 1px solid #f0f0f0;
             text-align: center;
         }
+        .startText {
+            background-color: #ff6813;
+            color: white;
+            border-radius: 4px;
+        }
+        .endText {
+            background-color: #3f4b5e;
+            color: white;
+            border-radius: 4px;
+        }
         .noticeName {
+            cursor: pointer;
         }
     }
 }
 
-// .noticeModal {
-//     text-align: center;
-//     width: 750px;
-//     padding: 35px 0px;
-//     .noticeImage {
-//         // width: 100px;
-//     }
-// }
+.ant-modal-body {
+    padding: 0 !important;
+}
+.noticeModal {
+    .oragneText {
+        margin-left: 5px;
+        color: #ff6813;
+    }
+    .modalHeaderArea {
+        border: 2px solid #f0f0f0;
+        height: 120px;
+        padding: 10px;
+        margin-top: 20px;
+    }
+    .noticeImage {
+        float: left;
+        margin-right: 20px;
+    }
+    .noticeName {
+        font-size: 1.8em;
+        font-weight: bold;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+    .noticeTime {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+}

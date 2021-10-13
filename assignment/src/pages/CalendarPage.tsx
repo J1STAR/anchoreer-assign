@@ -2,7 +2,8 @@ import React from "react";
 import axios from "axios";
 import moment from "moment";
 
-import Modal from "react-modal";
+import { Modal } from "antd";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 import "./CalendarPage.scss";
 
@@ -35,7 +36,7 @@ class CalendarPage extends React.Component<Props, State> {
         super(props);
         this.state = {
             data: [],
-            todayDate: moment("20210601"),
+            todayDate: moment(),
             dateArr: [],
             isModalOpen: false,
             modalData: {
@@ -61,14 +62,27 @@ class CalendarPage extends React.Component<Props, State> {
             const curNotice = response.data.filter((notice: Notice) => {
                 if (
                     moment(notice.start_time).month() + 1 ===
-                    6
-                    // moment(this.state.todayDate).month() + 1
+                        moment(this.state.todayDate).month() + 1 ||
+                    moment(notice.start_time).month() + 1 ===
+                        moment(this.state.todayDate).month() ||
+                    moment(notice.start_time).month() + 1 ===
+                        moment(this.state.todayDate).month() + 2
                 ) {
                     return notice;
                 }
             });
+            console.log(curNotice);
 
-            // this.calendarArr(curNotice);
+            const displayNoticeArea =
+                document.querySelectorAll(".displayNoticeArea");
+            for (let i = 0; i <= displayNoticeArea.length; i++) {
+                while (displayNoticeArea[i]?.hasChildNodes()) {
+                    displayNoticeArea[i].removeChild(
+                        displayNoticeArea[i].firstChild as any
+                    );
+                }
+            }
+
             this.appendStartNotice(curNotice);
             this.appendEndNotice(curNotice);
             this.setState({
@@ -80,45 +94,47 @@ class CalendarPage extends React.Component<Props, State> {
     };
 
     appendStartNotice = (curNotice: Notice[]) => {
-        curNotice.map((notice: Notice) => {
-            const startDateSpan = document.querySelector(
-                `.date${moment(notice.start_time).format("MMDD")}`
-            );
+        curNotice
+            .sort((a, b) => (a.name > b.name ? 1 : -1))
+            .map((notice: Notice) => {
+                const startDateSpan = document.querySelector(
+                    `.date${moment(notice.start_time).format("MMDD")}`
+                );
 
-            const startContent = document.createElement("p");
-            startContent.innerHTML = `<div>시 ${notice.name}</div>`;
-            startContent.addEventListener("click", () =>
-                this.onClickNotice(notice)
-            );
+                const startContent = document.createElement("p");
+                startContent.innerHTML = `<div class="noticeName"><span class="startText">시</span> ${notice.name}</div>`;
+                startContent.addEventListener("click", () =>
+                    this.onClickNotice(notice)
+                );
 
-            startDateSpan?.append(startContent);
-        });
+                startDateSpan?.append(startContent);
+            });
     };
 
     appendEndNotice = (curNotice: Notice[]) => {
-        curNotice.map((notice: Notice) => {
-            const endDateSpan = document.querySelector(
-                `.date${moment(notice.end_time).format("MMDD")}`
-            );
+        curNotice
+            .sort((a, b) => (a.name > b.name ? 1 : -1))
+            .map((notice: Notice) => {
+                const endDateSpan = document.querySelector(
+                    `.date${moment(notice.end_time).format("MMDD")}`
+                );
 
-            const endContent = document.createElement("p");
-            endContent.innerHTML = `<div>끝 ${notice.name}</div>`;
-            endContent.addEventListener("click", () =>
-                this.onClickNotice(notice)
-            );
+                const endContent = document.createElement("p");
+                endContent.innerHTML = `<div class="noticeName"><span class="endText">끝</span> ${notice.name}</div>`;
+                endContent.addEventListener("click", () =>
+                    this.onClickNotice(notice)
+                );
 
-            endDateSpan?.append(endContent);
-        });
+                endDateSpan?.append(endContent);
+            });
     };
 
     onClickNotice = (notice: Notice) => {
-        console.log("clickNotice", notice);
         this.setState({
             isModalOpen: true,
             modalData: notice,
         });
     };
-
     calendarArr = () => {
         const today = this.state.todayDate;
         const firstWeek = today.clone().startOf("month").week();
@@ -141,15 +157,55 @@ class CalendarPage extends React.Component<Props, State> {
                                 .week(week)
                                 .startOf("week")
                                 .add(index, "day");
-
-                            return (
-                                <div className="dateArea" key={index}>
-                                    <p className="date">{days.format("D")}</p>
-                                    <p
-                                        className={`date${days.format("MMDD")}`}
-                                    ></p>
-                                </div>
-                            );
+                            if (
+                                moment(this.state.todayDate).month() !==
+                                    moment(days).month() &&
+                                index === 0 &&
+                                week === firstWeek
+                            ) {
+                                return (
+                                    <div className="dateArea" key={index}>
+                                        <p className="date">
+                                            {days.format("MM/DD")}
+                                        </p>
+                                        <p
+                                            className={`displayNoticeArea date${days.format(
+                                                "MMDD"
+                                            )}`}
+                                        ></p>
+                                    </div>
+                                );
+                            } else if (
+                                moment(this.state.todayDate).month() !==
+                                    moment(days).month() &&
+                                moment(days).date() === 1
+                            ) {
+                                return (
+                                    <div className="dateArea" key={index}>
+                                        <p className="date">
+                                            {days.format("MM/DD")}
+                                        </p>
+                                        <p
+                                            className={`displayNoticeArea date${days.format(
+                                                "MMDD"
+                                            )}`}
+                                        ></p>
+                                    </div>
+                                );
+                            } else {
+                                return (
+                                    <div className="dateArea" key={index}>
+                                        <p className="date">
+                                            {days.format("D")}
+                                        </p>
+                                        <p
+                                            className={`displayNoticeArea date${days.format(
+                                                "MMDD"
+                                            )}`}
+                                        ></p>
+                                    </div>
+                                );
+                            }
                         })}
                 </div>
             );
@@ -157,112 +213,62 @@ class CalendarPage extends React.Component<Props, State> {
         return result;
     };
 
-    // calendarArr = (noticeArr: []) => {
-    //     const today = this.state.todayDate;
-    //     let firstWeek = today.clone().startOf("month").week();
-    //     const lastWeek =
-    //         today.clone().endOf("month").week() === 1
-    //             ? 53
-    //             : today.clone().endOf("month").week();
-
-    //     let tempArr = [] as any;
-
-    //     for (firstWeek; firstWeek <= lastWeek; firstWeek++) {
-    //         for (let i = 1; i <= 7; i++) {
-    //             let days = today
-    //                 .clone()
-    //                 .startOf("year")
-    //                 .week(firstWeek)
-    //                 .startOf("week")
-    //                 .add(i, "day");
-    //             tempArr.push({
-    //                 date: days.format("D"),
-    //             });
-    //         }
-    //     }
-    //     noticeArr.map((notice: Notice) => {
-    //         tempArr.map((res: any) => {
-    //             if (moment(notice.start_time).format("D") === res.date) {
-    //                 console.log(res.notice);
-    //                 res.notice = notice;
-    //             }
-    //         });
-    //     });
-
-    //     this.setState({
-    //         dateArr: tempArr,
-    //     });
-    // };
-
-    // renderCalendar = () => {
-    //     let renderResult: any = [];
-    //     for (let i = 1; i < 7; i++) {
-    //         renderResult.push(`<div class="weekArea">`);
-
-    //         this.state.dateArr
-    //             .slice((i - 1) * 7, i * 7)
-    //             .map((dateInfo: DateArr) => {
-    //                 renderResult.push(
-    //                     `<div class="dateArea">
-    //                         <p class="date">${dateInfo.date}</p>
-    //                         <p class="noticeName">${
-    //                             dateInfo.notice ? dateInfo.notice.name : ""
-    //                         }</p>
-    //                     </div>`
-    //                 );
-    //             });
-    //         renderResult.push(`</div>`);
-    //     }
-    //     return (
-    //         <div
-    //             dangerouslySetInnerHTML={{ __html: renderResult.join("") }}
-    //         ></div>
-    //     );
-    // };
-
     closeModal = () => {
         this.setState({
             isModalOpen: false,
         });
     };
 
+    openModal = () => {
+        this.setState({
+            isModalOpen: true,
+        });
+    };
+
+    nextMonthClick = () => {
+        this.fecthData();
+        this.setState({
+            todayDate: this.state.todayDate.clone().add(1, "month"),
+        });
+    };
+
+    prevMonthClick = () => {
+        this.fecthData();
+        this.setState({
+            todayDate: this.state.todayDate.clone().subtract(1, "month"),
+        });
+    };
+
     render() {
+        const weekArray = ["일", "월", "화", "수", "목", "금", "토"];
         return (
             <>
                 <div className="monthHeader">
-                    <button
-                        onClick={() =>
-                            this.setState({
-                                todayDate: this.state.todayDate
-                                    .clone()
-                                    .subtract(1, "month"),
-                            })
-                        }
-                    >
-                        이전달
-                    </button>
-                    {this.state.todayDate.format("YYYY.MM")}
-                    <button
-                        onClick={() =>
-                            this.setState({
-                                todayDate: this.state.todayDate
-                                    .clone()
-                                    .add(1, "month"),
-                            })
-                        }
-                    >
-                        다음달
-                    </button>
+                    <LeftOutlined onClick={this.prevMonthClick} />
+                    <span className="monthHeader_month">
+                        {this.state.todayDate.format("YYYY.MM")}
+                    </span>
+                    <RightOutlined onClick={this.nextMonthClick} />
+                </div>
+                <div className="weekNameArea">
+                    {weekArray.map((week: string, idx: number) => (
+                        <div key={idx} className="weekName">
+                            {week}
+                        </div>
+                    ))}
                 </div>
                 <div>{this.calendarArr()}</div>
 
                 <Modal
-                    isOpen={this.state.isModalOpen}
-                    ariaHideApp={false}
-                    onRequestClose={this.closeModal}
+                    visible={this.state.isModalOpen}
+                    onCancel={this.closeModal}
+                    onOk={this.openModal}
                     className="noticeModal"
+                    centered
+                    width="75%"
+                    footer={null}
                 >
-                    <div>
+                    <div className="modalHeaderArea">
                         <img
                             className="noticeImage"
                             width="90px"
@@ -270,6 +276,34 @@ class CalendarPage extends React.Component<Props, State> {
                             src={this.state.modalData.image}
                             alt="공고이미지"
                         />
+                        <p className="noticeName">
+                            {this.state.modalData.name}
+                        </p>
+                        <p className="noticeTime">
+                            {moment(this.state.modalData.start_time).format(
+                                "YYYY.MM.DD HH:mm"
+                            )}
+                            ~
+                            {moment(this.state.modalData.end_time).format(
+                                "YYYY.MM.DD HH:mm"
+                            )}
+                            <span className="oragneText">
+                                (
+                                {moment().diff(
+                                    moment(this.state.modalData.end_time),
+                                    "days"
+                                ) > 0
+                                    ? `${moment().diff(
+                                          moment(this.state.modalData.end_time),
+                                          "days"
+                                      )}일 지남`
+                                    : `${moment().diff(
+                                          moment(this.state.modalData.end_time),
+                                          "days"
+                                      )}일 전`}
+                                )
+                            </span>
+                        </p>
                     </div>
                     <div
                         dangerouslySetInnerHTML={{
@@ -278,14 +312,6 @@ class CalendarPage extends React.Component<Props, State> {
                     ></div>
                 </Modal>
             </>
-            // <div>
-            //     {this.state.data.map((notice: Notice) => (
-            // <div
-            //     key={notice.id}
-            //     dangerouslySetInnerHTML={{ __html: notice.content }}
-            // ></div>
-            //     ))}
-            // </div>
         );
     }
 }
