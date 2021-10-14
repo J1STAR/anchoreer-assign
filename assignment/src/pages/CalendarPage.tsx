@@ -72,7 +72,7 @@ const CalendarPage = () => {
         noticeContext.actions.setModalData(notice);
     };
 
-    const filterAppendNotice = () => {
+    const filterAppendNotice: () => void = () => {
         const curNotice = data.filter((notice: Notice) => {
             if (
                 moment(notice.start_time).month() + 1 ===

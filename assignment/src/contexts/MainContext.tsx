@@ -44,15 +44,16 @@ const MainContextProvider = ({ children }: any) => {
     }, []);
 
     const fecthData: () => void = async () => {
-        try {
-            const response: any = await axios.get(
+        await axios
+            .get(
                 "https://frontend-assignments.s3.ap-northeast-2.amazonaws.com/job_postings.json"
-            );
-            console.log(response);
-            setData(response.data);
-        } catch (err) {
-            console.error(err);
-        }
+            )
+            .then((response: any) => {
+                setData(response.data);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
     };
 
     const value = {
