@@ -17,6 +17,7 @@ const CalendarPage = () => {
 
     useEffect(() => {
         filterAppendNotice();
+        console.log("hello");
     });
 
     const clearChild = () => {
