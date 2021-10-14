@@ -1,0 +1,29 @@
+.ant-modal-body {
+    padding: 0 !important;
+}
+.noticeModal {
+    .oragneText {
+        margin-left: 5px;
+        color: #ff6813;
+    }
+    .modalHeaderArea {
+        border: 2px solid #f0f0f0;
+        height: 120px;
+        padding: 10px;
+        margin-top: 20px;
+    }
+    .noticeImage {
+        float: left;
+        margin-right: 20px;
+    }
+    .noticeName {
+        font-size: 1.8em;
+        font-weight: bold;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+    .noticeTime {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+}

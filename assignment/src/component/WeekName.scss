@@ -1,0 +1,13 @@
+.weekNameArea {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+
+    .weekName {
+        width: 100%;
+        text-align: center;
+        background-color: lightgray;
+        border: 1px solid white;
+        color: white;
+    }
+}
